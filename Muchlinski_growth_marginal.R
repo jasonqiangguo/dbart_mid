@@ -1,9 +1,13 @@
 # setwd("~/Dropbox/dbart_mid/Civil_War_PA")
 # setwd("/scratch/qg251/dbart_mid/Civial_War_PA")
+
+data.path <- "/Civil_War_PA"
+script.path <- "/muchlinski_rep"
+
 options(java.parameters = "-Xmx300g")
-getwd()
-data=read.csv(file="SambnisImp.csv") # data for prediction
-data2<-read.csv(file="Amelia.Imp3.csv") # data for causal machanisms
+
+data=read.csv(file=paste0(data.path, "/SambnisImp.csv")) # data for prediction
+data2<-read.csv(file=paste0(data.path, "/Amelia.Imp3.csv")) # data for causal machanisms
 
 library(dbarts)
 library(ggplot2)
@@ -40,12 +44,12 @@ data.full$warstds<-factor(
 
 # registerDoMC(cores=3) # distributing workload over multiple cores for faster computaiton
 
-set.seed(666) #the most metal seed for CV
+# set.seed(666) #the most metal seed for CV
+# 
+# model.btmchine <- bartMachine(X = data.full[,-1], y = factor(data.full$warstds), num_trees = 1000, num_burn_in = 2000, num_iterations_after_burn_in = 10000, serialize = T)
+# save(model.btmchine, file = paste0(data.path, "/model.btmchine.RData"))
 
-model.btmchine <- bartMachine(X = data.full[,-1], y = factor(data.full$warstds), num_trees = 1000, num_burn_in = 2000, num_iterations_after_burn_in = 10000, serialize = T)
-save(model.btmchine, file = "model.btmchine.RData")
-
-load("model.btmchine.RData")
+load(paste0(data.path, "/model.btmchine.RData"))
 
 
 ##############################################################
@@ -77,13 +81,13 @@ create_test_data <- function(choice){
 test <- lapply(c("high", "low"), create_test_data)
 
 
-dbart_formula <- as.formula(paste0("data.full$warstds ~ ", paste(names(data.full)[-1], collapse = "+")))
-model.dbart <- dbarts(dbartsData(dbart_formula, data.full, test = test[[1]]), control = dbartsControl(n.burn = 2000L, n.tree = 1000L, n.samples = 1000L, n.thin = 10))
-dbart_result <- model.dbart$run()
-save(dbart_result, file = "model.dbart.growth.RData")
+# dbart_formula <- as.formula(paste0("data.full$warstds ~ ", paste(names(data.full)[-1], collapse = "+")))
+# model.dbart <- dbarts(dbartsData(dbart_formula, data.full, test = test[[1]]), control = dbartsControl(n.burn = 2000L, n.tree = 1000L, n.samples = 1000L, n.thin = 10))
+# dbart_result <- model.dbart$run()
+# save(dbart_result, file = paste0(data.path, "/model.dbart.growth.RData"))
  
 
-load("model.dbart.growth.RData")
+load(paste0(data.path, "/model.dbart.growth.RData"))
 
 dbart_phat <- apply(dbart_result$test, 1, function(x) mean(pnorm(x)))
 dbart.hpc <- apply(dbart_result$test, 1, function(x) quantile(pnorm(x), probs = c(0.05, 0.95)))
@@ -158,5 +162,5 @@ probit.plot <- create_marginal_plot_gdpgrowth(probit.plot.data)
 
 
 pp <- grid.arrange(btmchine.plot, dbart.plot, probit.plot, ncol = 3)
-ggsave("btmachine_vs_dbart_vs_probit_marginal_gdpgrowth.pdf", pp, height = 8, width = 15)
+ggsave(paste0(script.path, "btmachine_vs_dbart_vs_probit_marginal_gdpgrowth.pdf"), pp, height = 8, width = 15)
 
