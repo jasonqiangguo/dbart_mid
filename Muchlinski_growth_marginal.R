@@ -1,8 +1,8 @@
 # setwd("~/Dropbox/dbart_mid/Civil_War_PA")
 # setwd("/scratch/qg251/dbart_mid/Civial_War_PA")
 
-data.path <- "/Civil_War_PA"
-script.path <- "/muchlinski_rep"
+data.path <- "/scratch/qg251/dbart_mid/Civil_War_PA"
+script.path <- "/scratch/qg251/dbart_mid/muchlinski_rep"
 
 options(java.parameters = "-Xmx300g")
 
