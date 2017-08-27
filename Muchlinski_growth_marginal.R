@@ -81,7 +81,7 @@ dbart_formula <- as.formula(paste0("data.full$warstds ~ ", paste(names(data.full
 model.dbart <- dbarts(dbartsData(dbart_formula, data.full, test = test[[1]]), control = dbartsControl(n.burn = 2000L, n.tree = 1000L, n.samples = 1000L, n.thin = 10))
 dbart_result <- model.dbart$run()
 save(dbart_result, file = "model.dbart.growth.RData")
-# 
+ 
 
 load("model.dbart.growth.RData")
 
