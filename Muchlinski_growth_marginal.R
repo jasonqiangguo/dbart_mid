@@ -162,5 +162,5 @@ probit.plot <- create_marginal_plot_gdpgrowth(probit.plot.data)
 
 
 pp <- grid.arrange(btmchine.plot, dbart.plot, probit.plot, ncol = 3)
-ggsave(paste0(script.path, "btmachine_vs_dbart_vs_probit_marginal_gdpgrowth.pdf"), pp, height = 8, width = 15)
+ggsave(paste0(script.path, "/btmachine_vs_dbart_vs_probit_marginal_gdpgrowth.pdf"), pp, height = 5, width = 15)
 
