@@ -103,7 +103,8 @@ names(dbart.plot.data) <- c("p_hat", "ci_lower_bd", "ci_upper_bd", "gdpgrowth")
 
 dbart_posterior_draws <- as.data.frame(t(pnorm(dbart_result$test)))
 names(dbart_posterior_draws) <- unlist(lapply(seq(5, 95, by = 5), function(x) paste0("pct_", x)))
-write.dta(dbart_posterior_draws, paste0(script.path, "/dbart_posterior_draws.dta"))
+dbart_data_to_store <- paste0(script.path, "/dbart_posterior_draws.dta")
+write.dta(dbart_posterior_draws, dbart_data_to_store)
 
 # in bartMachine result the probability is reversed for 0 and 1, so when calculating the y_hat and confidence intervals we have to correct the problem using the yhat to subtract from 1
 btmachine.matrix.full <- 1 - bart_machine_get_posterior(model.btmchine, new_data = test[[1]])$y_hat_posterior_samples
@@ -115,7 +116,8 @@ names(btmchine.plot.data) <- c("p_hat", "ci_lower_bd", "ci_upper_bd", "gdpgrowth
 
 btmachine_posterior_draws <- as.data.frame(t(btmachine.matrix.full))
 names(btmachine_posterior_draws) <- unlist(lapply(seq(5, 95, by = 5), function(x) paste0("pct_", x)))
-write.dta(btmachine_posterior_draws, paste0(script.path, "/btmachine_posterior_draws.dta"))
+btmchine_data_to_store <- paste0(script.path, "/btmachine_posterior_draws.dta")
+write.dta(btmachine_posterior_draws, btmchine_data_to_store)
 
 
 create_marginal_plot_gdpgrowth <- function(df){
