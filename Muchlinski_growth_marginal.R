@@ -9,6 +9,11 @@ options(java.parameters = "-Xmx300g")
 data=read.csv(file=paste0(data.path, "/SambnisImp.csv")) # data for prediction
 data2<-read.csv(file=paste0(data.path, "/Amelia.Imp3.csv")) # data for causal machanisms
 
+# data=read.csv(file="SambnisImp.csv") # data for prediction
+# data2<-read.csv(file="Amelia.Imp3.csv") # data for causal machanisms
+
+
+
 library(dbarts)
 library(ggplot2)
 library(gridExtra)
@@ -95,14 +100,14 @@ dbart.plot.data <- as.data.frame(cbind(dbart_phat, dbart.hpc[1,], dbart.hpc[2,],
 names(dbart.plot.data) <- c("p_hat", "ci_lower_bd", "ci_upper_bd", "gdpgrowth")
 
 
-marginal.mean.pred.high <- 1 - bart_machine_get_posterior(model.btmchine, new_data = test[[1]])$y_hat
-
 # in bartMachine result the probability is reversed for 0 and 1, so when calculating the y_hat and confidence intervals we have to correct the problem using the yhat to subtract from 1
-# calculate credible interval for each observation
-hpc_95_high <- 1 - calc_credible_intervals(model.btmchine, new_data = test[[1]])
+btmachine.matrix.full <- 1 - bart_machine_get_posterior(model.btmchine, new_data = test[[1]])$y_hat_posterior_samples
+btmachine.matrix <- btmachine.matrix.full[, 1:1000*10]
+btmchine_phat <- apply(btmachine.matrix, 1, function(x) mean(pnorm(x)))
+btmchine.hpc <- apply(btmachine.matrix, 1, function(x) quantile(pnorm(x), probs = c(0.05, 0.95)))
+btmchine.plot.data <- as.data.frame(cbind(btmchine_phat, btmchine.hpc[1,], btmchine.hpc[2,], test[[1]]$gdpgrowth))
+names(btmchine.plot.data) <- c("p_hat", "ci_lower_bd", "ci_upper_bd", "gdpgrowth")
 
-btmchine.plot.data <- as.data.frame(cbind(hpc_95_high[,1], hpc_95_high[,2], marginal.mean.pred.high, test[[1]]$gdpgrowth))
-names(btmchine.plot.data) <- c("ci_upper_bd", "ci_lower_bd", "p_hat", "gdpgrowth")
 
 
 
@@ -161,6 +166,6 @@ names(probit.plot.data) <- c("ci_upper_bd", "ci_lower_bd", "p_hat", "gdpgrowth")
 probit.plot <- create_marginal_plot_gdpgrowth(probit.plot.data)
 
 
-pp <- grid.arrange(btmchine.plot, dbart.plot, probit.plot, ncol = 3)
-ggsave(paste0(script.path, "/btmachine_vs_dbart_vs_probit_marginal_gdpgrowth.pdf"), pp, height = 5, width = 15)
+pp <- grid.arrange(btmchine.plot, dbart.plot, probit.plot, ncol = 2)
+ggsave(paste0(script.path, "/btmachine_vs_dbart_vs_probit_marginal_gdpgrowth.pdf"), pp, height = 5, width = 10)
 
