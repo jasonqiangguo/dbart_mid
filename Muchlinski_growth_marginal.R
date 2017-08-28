@@ -103,12 +103,12 @@ names(dbart.plot.data) <- c("p_hat", "ci_lower_bd", "ci_upper_bd", "gdpgrowth")
 # in bartMachine result the probability is reversed for 0 and 1, so when calculating the y_hat and confidence intervals we have to correct the problem using the yhat to subtract from 1
 btmachine.matrix.full <- 1 - bart_machine_get_posterior(model.btmchine, new_data = test[[1]])$y_hat_posterior_samples
 btmachine.matrix <- btmachine.matrix.full[, 1:1000*10]
-btmchine_phat <- apply(btmachine.matrix, 1, function(x) mean(pnorm(x)))
-btmchine.hpc <- apply(btmachine.matrix, 1, function(x) quantile(pnorm(x), probs = c(0.05, 0.95)))
+btmchine_phat <- apply(btmachine.matrix, 1, function(x) mean(x))
+btmchine.hpc <- apply(btmachine.matrix, 1, function(x) quantile(x, probs = c(0.05, 0.95)))
 btmchine.plot.data <- as.data.frame(cbind(btmchine_phat, btmchine.hpc[1,], btmchine.hpc[2,], test[[1]]$gdpgrowth))
 names(btmchine.plot.data) <- c("p_hat", "ci_lower_bd", "ci_upper_bd", "gdpgrowth")
 
-
+?apply
 
 
 create_marginal_plot_gdpgrowth <- function(df){
