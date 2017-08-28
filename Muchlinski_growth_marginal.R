@@ -113,7 +113,7 @@ btmchine.hpc <- apply(btmachine.matrix, 1, function(x) quantile(x, probs = c(0.0
 btmchine.plot.data <- as.data.frame(cbind(btmchine_phat, btmchine.hpc[1,], btmchine.hpc[2,], test[[1]]$gdpgrowth))
 names(btmchine.plot.data) <- c("p_hat", "ci_lower_bd", "ci_upper_bd", "gdpgrowth")
 
-btmachine_posterior_draws <- as.data.frame(t(btmachine.matrix.full))
+btmachine_posterior_draws <- as.data.frame(t(btmachine.matrix))
 names(btmachine_posterior_draws) <- c("pct_01", unlist(lapply(seq(5, 95, by = 5), function(x) paste0("pct_", x))), "pct_99")
 write.dta(btmachine_posterior_draws, "btmachine_posterior_draws.dta")
 
