@@ -14,6 +14,7 @@ data2<-read.csv(file=paste0(data.path, "/Amelia.Imp3.csv")) # data for causal ma
 
 
 
+library(foreign)
 library(dbarts)
 library(ggplot2)
 library(gridExtra)
@@ -94,11 +95,16 @@ test <- lapply(c("high", "low"), create_test_data)
 
 load(paste0(data.path, "/model.dbart.growth.RData"))
 
+dbarts.matrix.full <- dbart_result$test
+
 dbart_phat <- apply(dbart_result$test, 1, function(x) mean(pnorm(x)))
 dbart.hpc <- apply(dbart_result$test, 1, function(x) quantile(pnorm(x), probs = c(0.05, 0.95)))
 dbart.plot.data <- as.data.frame(cbind(dbart_phat, dbart.hpc[1,], dbart.hpc[2,], test[[1]]$gdpgrowth))
 names(dbart.plot.data) <- c("p_hat", "ci_lower_bd", "ci_upper_bd", "gdpgrowth")
 
+dbart_posterior_draws <- as.data.frame(t(pnorm(dbart_result$test)))
+names(dbart_posterior_draws) <- unlist(lapply(seq(5, 95, by = 5), function(x) paste0("pct_", x)))
+write.dta(dbart_posterior_draws, file = paste0(script.path, "/dbart_posterior_draws.dta"))
 
 # in bartMachine result the probability is reversed for 0 and 1, so when calculating the y_hat and confidence intervals we have to correct the problem using the yhat to subtract from 1
 btmachine.matrix.full <- 1 - bart_machine_get_posterior(model.btmchine, new_data = test[[1]])$y_hat_posterior_samples
@@ -108,7 +114,9 @@ btmchine.hpc <- apply(btmachine.matrix, 1, function(x) quantile(x, probs = c(0.0
 btmchine.plot.data <- as.data.frame(cbind(btmchine_phat, btmchine.hpc[1,], btmchine.hpc[2,], test[[1]]$gdpgrowth))
 names(btmchine.plot.data) <- c("p_hat", "ci_lower_bd", "ci_upper_bd", "gdpgrowth")
 
-?apply
+btmachine_posterior_draws <- as.data.frame(t(btmachine.matrix.full))
+names(btmachine_posterior_draws) <- unlist(lapply(seq(5, 95, by = 5), function(x) paste0("pct_", x)))
+write.dta(btmachine_posterior_draws, file = paste0(script.path, "/btmachine_posterior_draws.dta"))
 
 
 create_marginal_plot_gdpgrowth <- function(df){
@@ -167,5 +175,5 @@ probit.plot <- create_marginal_plot_gdpgrowth(probit.plot.data)
 
 
 pp <- grid.arrange(btmchine.plot, dbart.plot, probit.plot, ncol = 2)
-ggsave(paste0(script.path, "/btmachine_vs_dbart_vs_probit_marginal_gdpgrowth.pdf"), pp, height = 5, width = 10)
+ggsave(paste0(script.path, "/btmachine_vs_dbart_vs_probit_marginal_gdpgrowth.pdf"), pp, height = 10, width = 10)
 
