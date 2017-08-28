@@ -102,6 +102,8 @@ dbart.hpc <- apply(dbart_result$test, 1, function(x) quantile(pnorm(x), probs = 
 dbart.plot.data <- as.data.frame(cbind(dbart_phat, dbart.hpc[1,], dbart.hpc[2,], test[[1]]$gdpgrowth))
 names(dbart.plot.data) <- c("p_hat", "ci_lower_bd", "ci_upper_bd", "gdpgrowth")
 
+print(dim(dbart_result$test))
+                   
 dbart_posterior_draws <- as.data.frame(t(pnorm(dbart_result$test)))
 names(dbart_posterior_draws) <- unlist(lapply(seq(5, 95, by = 5), function(x) paste0("pct_", x)))
 write.dta(dbart_posterior_draws, file = paste0(script.path, "/dbart_posterior_draws.dta"))
