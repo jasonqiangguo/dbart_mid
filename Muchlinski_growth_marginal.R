@@ -102,7 +102,9 @@ dbart.plot.data <- as.data.frame(cbind(dbart_phat, dbart.hpc[1,], dbart.hpc[2,],
 names(dbart.plot.data) <- c("p_hat", "ci_lower_bd", "ci_upper_bd", "gdpgrowth")
 
 dbart_posterior_draws <- as.data.frame(t(pnorm(dbart_result$test)))
+print(dim(dbart_posterior_draws))
 names(dbart_posterior_draws) <- unlist(lapply(seq(5, 95, by = 5), function(x) paste0("pct_", x)))
+print(names(dbart_posterior_draws))
 write.dta(dbart_posterior_draws, "dbart_posterior_draws.dta")
 
 # in bartMachine result the probability is reversed for 0 and 1, so when calculating the y_hat and confidence intervals we have to correct the problem using the yhat to subtract from 1
