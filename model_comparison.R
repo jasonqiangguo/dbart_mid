@@ -138,7 +138,7 @@ FL <- produce_ROC_AUC(FL.1.pred)
 RF <- produce_ROC_AUC(RF.1.pred)
 BT <- produce_ROC_AUC(BT.1.pred)
 
-pdf("roc_compare.pdf", height = 8, width = 8)
+pdf(paste0(script.path, "/roc_compare.pdf"), height = 8, width = 8)
 plot(FL[[1]], main="Logits, Random Forests and BART")
 plot(RF[[1]], add=T, lty=2)
 plot(BT[[1]], add=T, lty=3)
