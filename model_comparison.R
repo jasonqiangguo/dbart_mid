@@ -1,6 +1,9 @@
+data.path <- "/scratch/qg251/dbart_mid/Civil_War_PA"
+script.path <- "/scratch/qg251/dbart_mid/muchlinski_rep"
+
 options(java.parameters = "-Xmx300g")
-data=read.csv(file="SambnisImp.csv") # data for prediction
-data2<-read.csv(file="Amelia.Imp3.csv") # data for causal machanisms
+data=read.csv(file=paste0(data.path, "/SambnisImp.csv")) # data for prediction
+data2<-read.csv(file=paste0(data.path, "/Amelia.Imp3.csv")) # data for causal machanisms
 
 library(foreign)
 library(ggplot2)
@@ -246,9 +249,9 @@ logit.plot <- create_marginal_plot_gdpgrowth(logit.plot.data)
 
 pp <- grid.arrange(btmchine.plot, logit.plot, ncol = 2)
 
-ggsave("logit_vs_bart_marginal_gdpgrowth.pdf", pp, height = 8, width = 16)
+ggsave(paste0(script.path, "/logit_vs_bart_marginal_gdpgrowth.pdf"), pp, height = 8, width = 16)
 
 # save all the data files in the "dbart_mid" dataset
-setwd("/scratch/qg251/dbart_mid")
+setwd(data.path)
 save(model.bt, file = "model.bt.RData")
 write.csv(out.pred, file = "onset.prediction.CSV")
