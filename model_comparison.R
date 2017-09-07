@@ -46,7 +46,7 @@ set.seed(666) #the most metal seed for CV
 
 #This method of data slicing - or CV - will be used for all logit models - uncorrected and corrected
 tc<-trainControl(method="cv", 
-                 number=5,#creates CV folds - 5 for this data
+                 number=10,#creates CV folds - 5 for this data
                  summaryFunction=twoClassSummary, # provides ROC summary stats in call to model
                  classProb=T)
                  
@@ -147,14 +147,13 @@ legend(0.32, 0.25, c(paste0("Fearon and Laitin (2003) ", FL[[2]]), paste0("Rando
 dev.off()
 
 # save predicted probabilities from 3 models into a dataset together with actual war onset
+data.full$warstds <- ifelse(data.full$warstds == "peace", 0, 1)
 out.pred <- as.data.frame(cbind(data.full$warstds, FL.1.pred$war,  RF.1.pred$war,  BT.1.pred$war))
 names(out.pred) <- c("onset", "logit", "RandomF", "BART")
 
 #######################################
 # produce marginal effects for growth #
 #######################################
-
-data.full$warstds <- ifelse(data.full$warstds == "peace", 0, 1)
 
 quant_prob <- c(.01, seq(0.05, 0.95, 0.05), .99)
 
