@@ -277,8 +277,8 @@ set.seed(666) #the most metal seed for CV
 # save(model.bt, file = "model.bt.RData")
 # write.csv(out.pred, file = "onset.prediction.CSV")
 
-load(paste0(data.path,"model.bt.RData"))
-pdf(paste0(script.path, "partial_growth_10fold.pdf"))
+load(paste0(data.path,"/model.bt.RData"))
+pdf(paste0(script.path, "/partial_growth_10fold.pdf"))
 pd_plot(model.bit)
 dev.off()
 
