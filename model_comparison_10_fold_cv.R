@@ -279,7 +279,7 @@ set.seed(666) #the most metal seed for CV
 
 load(paste0(data.path,"/model.bt.RData"))
 pdf(paste0(script.path, "/partial_growth_10fold.pdf"))
-pd_plot(model.bit)
+pd_plot(model.bit, "gdpgrowth")
 dev.off()
 
 
