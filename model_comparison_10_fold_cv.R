@@ -47,7 +47,7 @@ data.full<-data[,c("warstds", "ager", "agexp", "anoc", "army85", "autch98", "aut
         "pol4", "pol4m", "pol4sq", "polch98", "polcomp", "popdense",
         "presi", "pri", "proxregc", "ptime", "reg", "regd4_alt", "relfrac", "seceduc",
         "second", "semipol3", "sip2", "sxpnew", "sxpsq", "tnatwar", "trade",
-        "warhist", "xconst", "peaceyears")]
+        "warhist", "xconst")]
 
 ###Converting DV into Factor with names for Caret Library###
 data.full$warstds<-factor(
@@ -61,12 +61,12 @@ set.seed(666) #the most metal seed for CV
 
 # data.full <- sample_frac(data.full, size = 0.2, replace = FALSE)
 
-# #This method of data slicing - or CV - will be used for all logit models - uncorrected and corrected
-# tc<-trainControl(method="cv", 
-#                  number=10,#creates CV folds - 5 for this data
-#                  summaryFunction=twoClassSummary, # provides ROC summary stats in call to model
-#                  classProb=T)
-#                  
+#This method of data slicing - or CV - will be used for all logit models - uncorrected and corrected
+tc<-trainControl(method="cv",
+                 number=10,#creates CV folds - 5 for this data
+                 summaryFunction=twoClassSummary, # provides ROC summary stats in call to model
+                 classProb=T)
+
 # #Fearon and Laitin Model Specification###
 # model.fl.1<-train(as.factor(warstds)~warhist+ln_gdpen+lpopns+lmtnest+ncontig+oil+nwstate
 #              +inst3+pol4+ef+relfrac, #FL 2003 model spec
@@ -99,9 +99,9 @@ set.seed(666) #the most metal seed for CV
 # #confusionMatrix(model.rf, norm="average")
 # 
 # 
-# bartGrid <- expand.grid(num_trees = c(500, 1000), k = 2, alpha = 0.95, beta = 2, nu = 3)
-# model.bt <- train(as.factor(warstds)~., data=data.full, metric = "ROC", method = "bartMachine",
-#                   tuneGrid = bartGrid, trControl = tc,  num_burn_in = 2000, num_iterations_after_burn_in = 2000, serialize = T)
+bartGrid <- expand.grid(num_trees = c(500, 1000), k = 2, alpha = 0.95, beta = 2, nu = 3)
+model.bt <- train(as.factor(warstds)~., data=data.full, metric = "ROC", method = "bartMachine",
+                  tuneGrid = bartGrid, trControl = tc,  num_burn_in = 2000, num_iterations_after_burn_in = 2000, serialize = T)
 # 
 # load("model.btmchine.RData")
 # 
@@ -277,7 +277,6 @@ set.seed(666) #the most metal seed for CV
 # save(model.bt, file = "model.bt.RData")
 # write.csv(out.pred, file = "onset.prediction.CSV")
 
-load(paste0(data.path,"/model.bt.RData"))
 pdf(paste0(script.path, "/partial_growth_10fold.pdf"))
 pd_plot(model.bit, "gdpgrowth")
 dev.off()

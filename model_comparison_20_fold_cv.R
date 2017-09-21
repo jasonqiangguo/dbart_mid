@@ -255,7 +255,6 @@ data.full$warstds<-factor(
 # save(model.bt, file = "model.bt.20.fold.RData")
 # write.csv(out.pred, file = "onset.prediction.20.fold.CSV")
 
-load(paste0(data.path,"/model.bt.20.fold.RData"))
 pdf(paste0(script.path, "/partial_growth_20fold.pdf"))
 pd_plot(model.bit, "gdpgrowth")
 dev.off()
