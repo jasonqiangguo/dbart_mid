@@ -2,8 +2,25 @@ data.path <- "/scratch/qg251/dbart_mid/Civil_War_PA"
 script.path <- "/scratch/qg251/dbart_mid/muchlinski_rep"
 
 options(java.parameters = "-Xmx300g")
-data=read.csv(file=paste0(data.path, "/SambnisImp.csv")) # data for prediction
-data2<-read.csv(file=paste0(data.path, "/Amelia.Imp3.csv")) # data for causal machanisms
+data <- read.csv(file=paste0(data.path, "/SambnisImp.csv")) # data for prediction
+data2 <- read.csv(file=paste0(data.path, "/Amelia.Imp3.csv")) # data for causal machanisms
+
+# data$peaceyears <- 0
+# dyad_list <- unique(data$cowcode)
+# for (d in dyad_list){
+#  index <- which(data$cowcode == d)
+#  if(length(index) > 1){
+#    i = 0
+#    for (x in min(index[-1]):max(index)){
+#      if(!((data$warstds[x] == 1 & data$warstds[x] == data$warstds[x-1]) | (data$warstds[x] == 0 & data$warstds[x-1] == 1))){
+#        data$peaceyears[x] <- data$peaceyears[x-1] + 1
+#      }
+#      else{
+#        data$peaceyears[x] <- 0
+#      }
+#    }
+#  }
+# }
 
 library(foreign)
 library(ggplot2)
@@ -40,13 +57,13 @@ data.full$warstds<-factor(
 
 # registerDoMC(cores=7) # distributing workload over multiple cores for faster computaiton
 
-# set.seed(666) #the most metal seed for CV
-# 
-# # data.full <- sample_frac(data.full, size = 0.2, replace = FALSE)
-# 
+set.seed(666) #the most metal seed for CV
+
+# data.full <- sample_frac(data.full, size = 0.2, replace = FALSE)
+
 #This method of data slicing - or CV - will be used for all logit models - uncorrected and corrected
 tc<-trainControl(method="cv",
-                 number=20,#creates CV folds - 5 for this data
+                 number=5,#creates CV folds - 5 for this data
                  summaryFunction=twoClassSummary, # provides ROC summary stats in call to model
                  classProb=T)
 
@@ -60,6 +77,7 @@ summary(model.fl.1) #provides coefficients & traditional R model output
 model.fl.1 # provides CV summary stats # keep in mind caret takes first class (here that's 0)
 #as refernce class so sens and spec are backwards
 
+data$peaceyears
 
 ###Now doing Collier and Hoeffler (2004) uncorrected logistic specification###
 model.ch.1<-train(as.factor(warstds)~sxpnew+sxpsq+ln_gdpen+gdpgrowth+warhist+lmtnest+ef+popdense
@@ -138,7 +156,7 @@ FL <- produce_ROC_AUC(FL.1.pred)
 RF <- produce_ROC_AUC(RF.1.pred)
 BT <- produce_ROC_AUC(BT.1.pred)
 
-pdf(paste0(script.path, "/roc_compare_20_fold.pdf"), height = 8, width = 8)
+pdf(paste0(script.path, "/roc_compare_5_fold.pdf"), height = 8, width = 8)
 plot(FL[[1]], main="Logits, Random Forests and BART")
 plot(RF[[1]], add=T, lty=2)
 plot(BT[[1]], add=T, lty=3)
@@ -232,6 +250,8 @@ create_test_data_logit <- function(choice){
   return(test)
 }
 
+test <- lapply(c("high", "low"), create_test_data_logit)
+
 
 summary(model.logit$finalModel)
 
@@ -246,13 +266,17 @@ logit.plot <- create_marginal_plot_gdpgrowth(logit.plot.data)
 
 pp <- grid.arrange(btmchine.plot, logit.plot, ncol = 2)
 
-ggsave(paste0(script.path, "/logit_vs_bart_marginal_gdpgrowth_20_fold.pdf"), pp, height = 8, width = 16)
+ggsave(paste0(script.path, "/logit_vs_bart_marginal_gdpgrowth_5_fold.pdf"), pp, height = 8, width = 16)
 
 # save all the data files in the "dbart_mid" dataset
 setwd(data.path)
-save(model.bt, file = "model.bt.20.fold.RData")
-write.csv(out.pred, file = "onset.prediction.20.fold.CSV")
+save(model.bt, file = "model.bt.5.fold.RData")
+write.csv(out.pred, file = "onset.prediction.5.fold.CSV")
 
-pdf(paste0(script.path, "/partial_growth_20fold.pdf"))
+
+pdf(paste0(script.path, "/partial_growth_5fold.pdf"))
 pd_plot(model.bt, "gdpgrowth")
 dev.off()
+
+
+
