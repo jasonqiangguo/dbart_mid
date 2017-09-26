@@ -62,10 +62,10 @@ set.seed(666) #the most metal seed for CV
 # data.full <- sample_frac(data.full, size = 0.2, replace = FALSE)
 
 #This method of data slicing - or CV - will be used for all logit models - uncorrected and corrected
-# tc<-trainControl(method="cv",
-#                  number=5,#creates CV folds - 5 for this data
-#                  summaryFunction=twoClassSummary, # provides ROC summary stats in call to model
-#                  classProb=T)
+tc<-trainControl(method="cv",
+                 number=5,#creates CV folds - 5 for this data
+                 summaryFunction=twoClassSummary, # provides ROC summary stats in call to model
+                 classProb=T)
 
 #Fearon and Laitin Model Specification###
 model.fl.1<-train(as.factor(warstds)~warhist+ln_gdpen+lpopns+lmtnest+ncontig+oil+nwstate
