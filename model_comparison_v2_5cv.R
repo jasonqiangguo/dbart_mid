@@ -104,6 +104,7 @@ model.bt <- train(as.factor(warstds)~., data=data.full, metric = "ROC", method =
 
 md <- model.bt$finalModel
 
+save(md, file=paste0(data.path, "/final_model_5cv.RData"))
 
 ##partial dependence plot using covariates for those y = 1 
 pd_plot_prob_case_select = function(bart_machine, j, levs = c(0.05, seq(from = 0.10, to = 0.90, by = 0.10), 0.95), lower_ci = 0.025, upper_ci = 0.975, prop_data = 1){
