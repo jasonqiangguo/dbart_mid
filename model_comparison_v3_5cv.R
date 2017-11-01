@@ -5,6 +5,8 @@ options(java.parameters = "-Xmx300g")
 data <- read.csv(file=paste0(data.path, "/SambnisImp.csv")) # data for prediction
 data2 <- read.csv(file=paste0(data.path, "/Amelia.Imp3.csv")) # data for causal machanisms
 
+# data <- read.csv("~/Dropbox/dbart_mid/Civil_War_PA/SambnisImp.csv")
+
 # library(foreign)
 library(ggplot2)
 library(gridExtra)
@@ -19,19 +21,19 @@ library(bartMachine)
 library(MASS)
 ###Using only the 88 variables specified in Sambanis (2006) Appendix###
 data.full<-data[,c("warstds", "ager", "agexp", "anoc", "army85", "autch98", "auto4",
-        "autonomy", "avgnabo", "centpol3", "coldwar", "decade1", "decade2",
-        "decade3", "decade4", "dem", "dem4", "demch98", "dlang", "drel",
-        "durable", "ef", "ef2", "ehet", "elfo", "elfo2", "etdo4590",
-        "expgdp", "exrec", "fedpol3", "fuelexp", "gdpgrowth", "geo1", "geo2",
-        "geo34", "geo57", "geo69", "geo8", "illiteracy", "incumb", "infant",
-        "inst", "inst3", "life", "lmtnest", "ln_gdpen", "lpopns", "major", "manuexp", "milper",
-        "mirps0", "mirps1", "mirps2", "mirps3", "nat_war", "ncontig",
-        "nmgdp", "nmdp4_alt", "numlang", "nwstate", "oil", "p4mchg",
-        "parcomp", "parreg", "part", "partfree", "plural", "plurrel",
-        "pol4", "pol4m", "pol4sq", "polch98", "polcomp", "popdense",
-        "presi", "pri", "proxregc", "ptime", "reg", "regd4_alt", "relfrac", "seceduc",
-        "second", "semipol3", "sip2", "sxpnew", "sxpsq", "tnatwar", "trade",
-        "warhist", "xconst")]
+                   "autonomy", "avgnabo", "centpol3", "coldwar", "decade1", "decade2",
+                   "decade3", "decade4", "dem", "dem4", "demch98", "dlang", "drel",
+                   "durable", "ef", "ef2", "ehet", "elfo", "elfo2", "etdo4590",
+                   "expgdp", "exrec", "fedpol3", "fuelexp", "gdpgrowth", "geo1", "geo2",
+                   "geo34", "geo57", "geo69", "geo8", "illiteracy", "incumb", "infant",
+                   "inst", "inst3", "life", "lmtnest", "ln_gdpen", "lpopns", "major", "manuexp", "milper",
+                   "mirps0", "mirps1", "mirps2", "mirps3", "nat_war", "ncontig",
+                   "nmgdp", "nmdp4_alt", "numlang", "nwstate", "oil", "p4mchg",
+                   "parcomp", "parreg", "part", "partfree", "plural", "plurrel",
+                   "pol4", "pol4m", "pol4sq", "polch98", "polcomp", "popdense",
+                   "presi", "pri", "proxregc", "ptime", "reg", "regd4_alt", "relfrac", "seceduc",
+                   "second", "semipol3", "sip2", "sxpnew", "sxpsq", "tnatwar", "trade",
+                   "warhist", "xconst")]
 
 ###Converting DV into Factor with names for Caret Library###
 data.full$warstds<-factor(
@@ -53,9 +55,9 @@ tc<-trainControl(method="cv",
 
 #Fearon and Laitin Model Specification###
 model.fl.1<-train(as.factor(warstds)~warhist+ln_gdpen+lpopns+lmtnest+ncontig+oil+nwstate
-             +inst3+pol4+ef+relfrac, #FL 2003 model spec
-             metric="ROC", method="glm", family="binomial", #uncorrected logistic model
-             trControl=tc, data=data.full)
+                  +inst3+pol4+ef+relfrac, #FL 2003 model spec
+                  metric="ROC", method="glm", family="binomial", #uncorrected logistic model
+                  trControl=tc, data=data.full)
 
 summary(model.fl.1) #provides coefficients & traditional R model output
 model.fl.1 # provides CV summary stats # keep in mind caret takes first class (here that's 0)
@@ -64,15 +66,15 @@ model.fl.1 # provides CV summary stats # keep in mind caret takes first class (h
 
 ###Now doing Collier and Hoeffler (2004) uncorrected logistic specification###
 model.ch.1<-train(as.factor(warstds)~sxpnew+sxpsq+ln_gdpen+gdpgrowth+warhist+lmtnest+ef+popdense
-                  +lpopns+coldwar+seceduc+ptime, #CH 2004 model spec
+                  +lpopns+coldwar+seceduc+ptime+trade, #CH 2004 model spec
                   metric="ROC", method="glm", family="binomial",
                   trControl=tc, data=data.full)
 model.ch.1
 
 
-bartGrid <- expand.grid(num_trees = c(500, 1000), k = 2, alpha = 0.95, beta = 2, nu = 3)
-model.bt <- train(as.factor(warstds)~., data=data.full, metric = "ROC", method = "bartMachine",
-                  tuneGrid = bartGrid, trControl = tc,  num_burn_in = 2000, num_iterations_after_burn_in = 2000, serialize = T)
+# bartGrid <- expand.grid(num_trees = c(500, 1000), k = 2, alpha = 0.95, beta = 2, nu = 3)
+# model.bt <- train(as.factor(warstds)~., data=data.full, metric = "ROC", method = "bartMachine",
+#                   tuneGrid = bartGrid, trControl = tc,  num_burn_in = 2000, num_iterations_after_burn_in = 2000, serialize = T)
 
 
 # model.bt <- bartMachine(X = data.full[,-1], y = factor(data.full$warstds), num_trees = 1000, num_burn_in = 2000, num_iterations_after_burn_in = 2000, alpha = 0.95, beta = 2, k = 2, q = 0.9, nu = 3, serialize = T)
@@ -102,9 +104,12 @@ model.bt <- train(as.factor(warstds)~., data=data.full, metric = "ROC", method =
 # 
 # model.bt2 <- bartMachine(y=factor(dt[,1]), X=as.data.frame(dt$x), num_trees = 100, num_burn_in = 200, num_iterations_after_burn_in = 200, alpha = 0.95, beta = 2, k = 2, q = 0.9, nu = 3, serialize = T)
 
-md <- model.bt$finalModel
+# md <- model.bt$finalModel
+# 
+# save(md, file=paste0(data.path, "/final_model_5cv.RData"))
 
-save(md, file=paste0(data.path, "/final_model_5cv.RData"))
+load(paste0(data.path, "/final_model_5cv.RData"))
+# load("~/Dropbox/dbart_mid/Civil_War_PA/final_model_5cv.RData")
 
 ##partial dependence plot using covariates for those y = 1 
 pd_plot_prob_25pred = function(bart_machine, j, levs = c(0.05, seq(from = 0.10, to = 0.90, by = 0.10), 0.95), lower_ci = 0.025, upper_ci = 0.975, prop_data = 1){
@@ -172,6 +177,200 @@ pd_plot_prob_25pred = function(bart_machine, j, levs = c(0.05, seq(from = 0.10, 
   bart_avg_predictions_upper = apply(bart_avg_predictions_by_quantile_by_gibbs, 1, quantile, probs = upper_ci)
   
   var_name = ifelse(class(j) == "character", j, bart_machine$training_data_features[j])
+  ylab_name = ifelse(bart_machine$pred_type == "classification", "Probabilities", "Partial Effect")
+  par(mar=c(5,5,5,5))
+  plot(x_j_quants, bart_avg_predictions_by_quantile, 
+       type = "o", 
+       # main = "Partial Dependence Plot",
+       # ylim = c(min(bart_avg_predictions_lower, bart_avg_predictions_upper), max(bart_avg_predictions_lower, bart_avg_predictions_upper)),
+       ylim = c(0, 0.5),
+       ylab = ylab_name,
+       # xlab = paste(var_name, "plotted at specified quantiles")
+       xlab = "GDP growth plotted at specified quantiles",
+       cex.lab = 2, cex.axis = 1.5)
+  # polygon(c(x_j_quants, rev(x_j_quants)), c(bart_avg_predictions_upper, rev(bart_avg_predictions_lower)), col = "gray87", border = NA)
+  lines(x_j_quants, bart_avg_predictions_lower, type = "o", col = "blue", lwd = 1)
+  lines(x_j_quants, bart_avg_predictions_upper, type = "o", col = "blue", lwd = 1)
+  lines(x_j_quants, bart_avg_predictions_by_quantile, type = "o", lwd = 2)
+  
+  invisible(list(x_j_quants = x_j_quants, bart_avg_predictions_by_quantile = bart_avg_predictions_by_quantile, prop_data = prop_data))
+}
+
+pdf(paste0(script.path, "/partial_growth_top25_5cv.pdf"))
+pd_plot_prob_25pred(md, levs = c(0.01, seq(0.05, 0.95, by = 0.05), 0.99), "gdpgrowth")
+dev.off()
+
+##partial dependence plot using covariates for those y = 1 
+pd_plot_prob_case_select = function(bart_machine, j, levs = c(0.05, seq(from = 0.10, to = 0.90, by = 0.10), 0.95), lower_ci = 0.025, upper_ci = 0.975, prop_data = 1, choice){
+  # check_serialization(bart_machine) #ensure the Java object exists and fire an error if not
+  if (class(j) == "integer"){
+    j = as.numeric(j)
+  }
+  if (class(j) == "numeric" && (j < 1 || j > bart_machine$p)){
+    stop(paste("You must set j to a number between 1 and p =", bart_machine$p))
+  } else if (class(j) == "character" && !(j %in% bart_machine$training_data_features)){
+    stop("j must be the name of one of the training features (see \"<bart_model>$training_data_features\")")
+  } else if (!(class(j) == "numeric" || class(j) == "character")){
+    stop("j must be a column number or column name")
+  }
+  
+  x_j = bart_machine$model_matrix_training_data[, j]
+  
+  #fail with a warning if there's only one value (we don't want an error because it would fail on loops).
+  if (length(unique(na.omit(x_j))) <= 1){
+    warning("There must be more than one unique value in this training feature. PD plot not generated.")
+    return()
+  }
+  x_j_quants = unique(quantile(x_j, levs, na.rm = TRUE))
+  
+  #fail with a warning if there's only one value (we don't want an error because it would fail on loops).
+  if (length(unique(x_j_quants)) <= 1){
+    warning("There must be more than one unique value among the quantiles selected. PD plot not generated.")
+    return()
+  }
+  
+  # n_pd_plot = round(bart_machine$n * prop_data)
+  if (choice == "high"){
+    n_pd_plot = sum(bart_machine$y == "war")
+    bart_predictions_by_quantile = array(NA, c(length(x_j_quants), n_pd_plot, bart_machine$num_iterations_after_burn_in))
+    
+    for (q in 1 : length(x_j_quants)){
+      #pull out a certain proportion of the data randomly
+      # indices = sample(1 : bart_machine$n, n_pd_plot)
+      indices = which(bart_machine$y == "war")
+      #now create test data matrix
+      test_data = bart_machine$X[indices, ]
+      test_data[, j] = rep(x_j_quants[q], n_pd_plot)
+      
+      bart_predictions_by_quantile[q, , ] = 1 - bart_machine_get_posterior(bart_machine, test_data)$y_hat_posterior_samples
+      cat(".")
+    }
+    cat("\n")  
+  }
+  if (choice == "low"){
+    n_pd_plot = sum(bart_machine$y == "peace")
+    bart_predictions_by_quantile = array(NA, c(length(x_j_quants), n_pd_plot, bart_machine$num_iterations_after_burn_in))
+    
+    for (q in 1 : length(x_j_quants)){
+      #pull out a certain proportion of the data randomly
+      # indices = sample(1 : bart_machine$n, n_pd_plot)
+      indices = which(bart_machine$y == "peace")
+      #now create test data matrix
+      test_data = bart_machine$X[indices, ]
+      test_data[, j] = rep(x_j_quants[q], n_pd_plot)
+      
+      bart_predictions_by_quantile[q, , ] = 1 - bart_machine_get_posterior(bart_machine, test_data)$y_hat_posterior_samples
+      cat(".")
+    }
+    cat("\n")  
+  }
+  
+  
+  if (bart_machine$pred_type == "classification"){ ##convert to probits
+    bart_predictions_by_quantile = bart_predictions_by_quantile
+  }
+  
+  bart_avg_predictions_by_quantile_by_gibbs = array(NA, c(length(x_j_quants), bart_machine$num_iterations_after_burn_in))
+  for (q in 1 : length(x_j_quants)){
+    for (g in 1 : bart_machine$num_iterations_after_burn_in){
+      bart_avg_predictions_by_quantile_by_gibbs[q, g] = mean(bart_predictions_by_quantile[q, , g])
+    }		
+  }
+  
+  bart_avg_predictions_by_quantile = apply(bart_avg_predictions_by_quantile_by_gibbs, 1, mean)
+  bart_avg_predictions_lower = apply(bart_avg_predictions_by_quantile_by_gibbs, 1, quantile, probs = lower_ci)
+  bart_avg_predictions_upper = apply(bart_avg_predictions_by_quantile_by_gibbs, 1, quantile, probs = upper_ci)
+  
+  var_name = ifelse(class(j) == "character", j, bart_machine$training_data_features[j])
+  ylab_name = ifelse(bart_machine$pred_type == "classification", "Probabilities", "Partial Effect")
+  par(mar=c(5,5,5,5))
+  plot(x_j_quants, bart_avg_predictions_by_quantile, 
+       type = "o", 
+       # main = "Partial Effect vs. Conditional Effect",
+       # ylim = c(min(bart_avg_predictions_lower, bart_avg_predictions_upper), max(bart_avg_predictions_lower, bart_avg_predictions_upper)),
+       ylim = c(0, 1),
+       # ylab = "",
+       ylab = ylab_name,
+       # mtext("Probabilities", side=2, line=2.2, cex=2),
+       # xlab = paste(var_name, "plotted at specified quantiles"), 
+       xlab = "GDP Growth plotted at specified quantiles", cex.lab = 2, cex.axis = 1.5)
+  
+  # polygon(c(x_j_quants, rev(x_j_quants)), c(bart_avg_predictions_upper, rev(bart_avg_predictions_lower)), col = "gray87", border = NA)
+  lines(x_j_quants, bart_avg_predictions_lower, type = "o", pch = 19, col = "blue", lwd = 1, lty = 2)
+  lines(x_j_quants, bart_avg_predictions_upper, type = "o", pch = 19, col = "blue", lwd = 1, lty = 2)
+  lines(x_j_quants, bart_avg_predictions_by_quantile, type = "o", pch = 19, lwd = 2, col = "blue")
+  
+  invisible(list(x_j_quants = x_j_quants, bart_avg_predictions_by_quantile = bart_avg_predictions_by_quantile, prop_data = prop_data))
+}
+
+
+# pdf(paste0(script.path, "/partial_growth_case_select_5cv.pdf"))
+# pd_plot_prob_case_select(md, "gdpgrowth")
+# dev.off()
+
+
+##partial dependence plot
+pd_plot_prob = function(bart_machine, j, levs = c(0.05, seq(from = 0.10, to = 0.90, by = 0.10), 0.95), lower_ci = 0.025, upper_ci = 0.975, prop_data = 1){
+  # check_serialization(bart_machine) #ensure the Java object exists and fire an error if not
+  if (class(j) == "integer"){
+    j = as.numeric(j)
+  }
+  if (class(j) == "numeric" && (j < 1 || j > bart_machine$p)){
+    stop(paste("You must set j to a number between 1 and p =", bart_machine$p))
+  } else if (class(j) == "character" && !(j %in% bart_machine$training_data_features)){
+    stop("j must be the name of one of the training features (see \"<bart_model>$training_data_features\")")
+  } else if (!(class(j) == "numeric" || class(j) == "character")){
+    stop("j must be a column number or column name")
+  }
+  
+  x_j = bart_machine$model_matrix_training_data[, j]
+  
+  #fail with a warning if there's only one value (we don't want an error because it would fail on loops).
+  if (length(unique(na.omit(x_j))) <= 1){
+    warning("There must be more than one unique value in this training feature. PD plot not generated.")
+    return()
+  }
+  x_j_quants = unique(quantile(x_j, levs, na.rm = TRUE))
+  
+  #fail with a warning if there's only one value (we don't want an error because it would fail on loops).
+  if (length(unique(x_j_quants)) <= 1){
+    warning("There must be more than one unique value among the quantiles selected. PD plot not generated.")
+    return()
+  }
+  
+  n_pd_plot = round(bart_machine$n * prop_data)
+  # n_pd_plot = sum(bart_machine$y == "war")
+  bart_predictions_by_quantile = array(NA, c(length(x_j_quants), n_pd_plot, bart_machine$num_iterations_after_burn_in))
+  
+  for (q in 1 : length(x_j_quants)){
+    #pull out a certain proportion of the data randomly
+    indices = sample(1 : bart_machine$n, n_pd_plot)
+    # indices = which(bart_machine$y == "war")
+    #now create test data matrix
+    test_data = bart_machine$X[indices, ]
+    test_data[, j] = rep(x_j_quants[q], n_pd_plot)
+    
+    bart_predictions_by_quantile[q, , ] = 1 - bart_machine_get_posterior(bart_machine, test_data)$y_hat_posterior_samples
+    cat(".")
+  }
+  cat("\n")
+  
+  if (bart_machine$pred_type == "classification"){ ##convert to probits
+    bart_predictions_by_quantile = bart_predictions_by_quantile
+  }
+  
+  bart_avg_predictions_by_quantile_by_gibbs = array(NA, c(length(x_j_quants), bart_machine$num_iterations_after_burn_in))
+  for (q in 1 : length(x_j_quants)){
+    for (g in 1 : bart_machine$num_iterations_after_burn_in){
+      bart_avg_predictions_by_quantile_by_gibbs[q, g] = mean(bart_predictions_by_quantile[q, , g])
+    }		
+  }
+  
+  bart_avg_predictions_by_quantile = apply(bart_avg_predictions_by_quantile_by_gibbs, 1, mean)
+  bart_avg_predictions_lower = apply(bart_avg_predictions_by_quantile_by_gibbs, 1, quantile, probs = lower_ci)
+  bart_avg_predictions_upper = apply(bart_avg_predictions_by_quantile_by_gibbs, 1, quantile, probs = upper_ci)
+  
+  var_name = ifelse(class(j) == "character", j, bart_machine$training_data_features[j])
   ylab_name = ifelse(bart_machine$pred_type == "classification", "Partial Effect (Probabilities)", "Partial Effect")
   plot(x_j_quants, bart_avg_predictions_by_quantile, 
        type = "o", 
@@ -189,11 +388,9 @@ pd_plot_prob_25pred = function(bart_machine, j, levs = c(0.05, seq(from = 0.10, 
 }
 
 
-pdf(paste0(script.path, "/partial_growth_top25_5cv.pdf"))
-pd_plot_prob_25pred(md, "gdpgrowth")
+pdf(paste0(script.path, "/partial_growth_5cv.pdf"))
+pd_plot_prob(md, levs = c(0.01, seq(0.05, 0.95, by = 0.05),0.99),  "gdpgrowth")
 dev.off()
-
-
 
 # ###Gathering info for ROC Plots ###
 # FL.1.pred<-predict(model.fl.1, type="prob")
@@ -227,8 +424,339 @@ dev.off()
 # names(out.pred) <- c("onset", "logit", "RandomF", "BART")
 # 
 # #######################################
-# # produce marginal effects for growth #
+# # produce marginal(conditional) effects for growth #
 # #######################################
+cond_plot_prob_case_select = function(bart_machine, j, levs = c(0.05, seq(from = 0.10, to = 0.90, by = 0.10), 0.95), lower_ci = 0.025, upper_ci = 0.975, prop_data = 1, choice){
+  # check_serialization(bart_machine) #ensure the Java object exists and fire an error if not
+  if (class(j) == "integer"){
+    j = as.numeric(j)
+  }
+  if (class(j) == "numeric" && (j < 1 || j > bart_machine$p)){
+    stop(paste("You must set j to a number between 1 and p =", bart_machine$p))
+  } else if (class(j) == "character" && !(j %in% bart_machine$training_data_features)){
+    stop("j must be the name of one of the training features (see \"<bart_model>$training_data_features\")")
+  } else if (!(class(j) == "numeric" || class(j) == "character")){
+    stop("j must be a column number or column name")
+  }
+  
+  x_j = bart_machine$model_matrix_training_data[, j]
+  
+  #fail with a warning if there's only one value (we don't want an error because it would fail on loops).
+  if (length(unique(na.omit(x_j))) <= 1){
+    warning("There must be more than one unique value in this training feature. PD plot not generated.")
+    return()
+  }
+  x_j_quants = unique(quantile(x_j, levs, na.rm = TRUE))
+  print(x_j_quants)
+  #fail with a warning if there's only one value (we don't want an error because it would fail on loops).
+  if (length(unique(x_j_quants)) <= 1){
+    warning("There must be more than one unique value among the quantiles selected. PD plot not generated.")
+    return()
+  }
+  
+  # n_pd_plot = round(bart_machine$n * prop_data)
+  # n_pd_plot = sum(bart_machine$y == "war")
+  bart_predictions_by_quantile = array(NA, c(length(x_j_quants), bart_machine$num_iterations_after_burn_in))
+  
+  if (choice == "high"){
+    for (q in 1 : length(x_j_quants)){
+      # pull out a certain proportion of the data randomly
+      # indices = sample(1 : bart_machine$n, n_pd_plot)
+      indices = which(bart_machine$y == "war")
+      # now create test data matrix
+      test_data = bart_machine$X[1, ]
+      test_data[1, ] = apply(bart_machine$X[indices,], 2, median)
+      test_data[, j] = x_j_quants[q]
+      
+      bart_predictions_by_quantile[q, ] = 1 - bart_machine_get_posterior(bart_machine, test_data)$y_hat_posterior_samples
+      cat(".")
+    }
+    cat("\n") 
+  }
+  if (choice == "low"){
+    for (q in 1 : length(x_j_quants)){
+      # pull out a certain proportion of the data randomly
+      # indices = sample(1 : bart_machine$n, n_pd_plot)
+      indices = which(bart_machine$y == "peace")
+      # now create test data matrix
+      test_data = bart_machine$X[1, ]
+      test_data[1, ] = apply(bart_machine$X[indices,], 2, median)
+      test_data[, j] = x_j_quants[q]
+      
+      bart_predictions_by_quantile[q, ] = 1 - bart_machine_get_posterior(bart_machine, test_data)$y_hat_posterior_samples
+      cat(".")
+    }
+    cat("\n") 
+  }
+  
+  # if (bart_machine$pred_type == "classification"){ ##convert to probits
+  #   bart_predictions_by_quantile = bart_predictions_by_quantile
+  # }
+  #   
+  #   
+  # bart_avg_predictions_by_quantile_by_gibbs = array(NA, c(length(x_j_quants), bart_machine$num_iterations_after_burn_in))
+  # for (q in 1 : length(x_j_quants)){
+  #   for (g in 1 : bart_machine$num_iterations_after_burn_in){
+  #     bart_avg_predictions_by_quantile_by_gibbs[q, g] = mean(bart_predictions_by_quantile[q, , g])
+  #   }		
+  # }
+  
+  bart_avg_predictions_by_quantile = apply(bart_predictions_by_quantile, 1, mean)
+  bart_avg_predictions_lower = apply(bart_predictions_by_quantile, 1, quantile, probs = lower_ci)
+  bart_avg_predictions_upper = apply(bart_predictions_by_quantile, 1, quantile, probs = upper_ci)
+  
+  var_name = ifelse(class(j) == "character", j, bart_machine$training_data_features[j])
+  ylab_name = ifelse(bart_machine$pred_type == "classification", "Conditional Effect (Probabilities)", "Conditional Effect")
+  # plot(x_j_quants, bart_avg_predictions_by_quantile, 
+  #      type = "o", 
+  #      main = "Conditional Effect Plot",
+  #      # ylim = c(min(bart_avg_predictions_lower, bart_avg_predictions_upper), max(bart_avg_predictions_lower, bart_avg_predictions_upper)),
+  #      ylim = c(0, 1),
+  #      ylab = ylab_name,
+  #      xlab = paste(var_name, "plotted at specified quantiles"))
+  # polygon(c(x_j_quants, rev(x_j_quants)), c(bart_avg_predictions_upper, rev(bart_avg_predictions_lower)), col = "grey91", border = NA)
+  lines(x_j_quants, bart_avg_predictions_lower, type = "o", pch = 19, col = "red", lwd = 1, lty = 2)
+  lines(x_j_quants, bart_avg_predictions_upper, type = "o", pch = 19, col = "red", lwd = 1, lty = 2)
+  lines(x_j_quants, bart_avg_predictions_by_quantile, type = "o", lwd = 2, pch = 19, col = "red")
+  # legend("topright", c("Partial Effect", "Conditional Effect"), lty = 1, pch = 19, col = c("blue", "red"))
+  # invisible(list(x_j_quants = x_j_quants, bart_avg_predictions_by_quantile = bart_avg_predictions_by_quantile, prop_data = prop_data))
+}
+
+# cond_plot_prob_case_select(md, "gdpgrowth")
+
+
+
+# pdf(paste0(script.path, "/partial_growth_5cv.pdf"))
+# pdf("~/Dropbox/dbart_mid/Civil_War_PA/partial_vs_conditional_high.pdf", height = 8, width = 12)
+# pd_plot_prob_case_select(md, levs = c(.01, seq(0.05, 0.95, 0.05), .99), "gdpgrowth", choice ="high")
+# cond_plot_prob_case_select(md, levs = c(.01, seq(0.05, 0.95, 0.05), .99), "gdpgrowth", choice = "high")
+# dev.off()
+
+# pdf("~/Dropbox/dbart_mid/Civil_War_PA/partial_vs_conditional_low.pdf", height = 8, width = 12)
+pdf(paste0(script.path, "partial_vs_conditional_low.pdf"), height = 8, width = 12)
+pd_plot_prob_case_select(md, levs = c(.01, seq(0.05, 0.95, 0.05), .99), "gdpgrowth", choice ="low")
+cond_plot_prob_case_select(md, levs = c(.01, seq(0.05, 0.95, 0.05), .99), "gdpgrowth", choice = "low")
+dev.off()
+
+
+probit.md <- model.ch.1$finalModel
+
+cond_plot_prob_case_select_probit = function(probit, j, levs = c(0.05, seq(from = 0.10, to = 0.90, by = 0.10), 0.95), lower_ci = 0.025, upper_ci = 0.975, prop_data = 1, choice){
+  # check_serialization(bart_machine) #ensure the Java object exists and fire an error if not
+  # if (class(j) == "integer"){
+  #   j = as.numeric(j)
+  # }
+  # if (class(j) == "numeric" && (j < 1 || j > bart_machine$p)){
+  #   stop(paste("You must set j to a number between 1 and p =", bart_machine$p))
+  # } else if (class(j) == "character" && !(j %in% bart_machine$training_data_features)){
+  #   stop("j must be the name of one of the training features (see \"<bart_model>$training_data_features\")")
+  # } else if (!(class(j) == "numeric" || class(j) == "character")){
+  #   stop("j must be a column number or column name")
+  # }
+  x_j = probit$data[, j]
+  # x_j = bart_machine$model_matrix_training_data[, j]
+  
+  #fail with a warning if there's only one value (we don't want an error because it would fail on loops).
+  if (length(unique(na.omit(x_j))) <= 1){
+    warning("There must be more than one unique value in this training feature. PD plot not generated.")
+    return()
+  }
+  x_j_quants = unique(quantile(x_j, levs, na.rm = TRUE))
+  print(x_j_quants)
+  #fail with a warning if there's only one value (we don't want an error because it would fail on loops).
+  if (length(unique(x_j_quants)) <= 1){
+    warning("There must be more than one unique value among the quantiles selected. PD plot not generated.")
+    return()
+  }
+  
+  # n_pd_plot = round(bart_machine$n * prop_data)
+  # n_pd_plot = sum(bart_machine$y == "war")
+  # bart_predictions_by_quantile = array(NA, c(length(x_j_quants), bart_machine$num_iterations_after_burn_in))
+  
+  test_data = as.data.frame(matrix(NA, nrow = length(x_j_quants), ncol = dim(probit$data)[2]-1))
+  test_data_name = names(probit$data[, -dim(probit$data)[2]])
+  names(test_data) = test_data_name
+  
+  if (choice == "high"){
+    for (q in 1:ncol(test_data)){
+      test_data[, q] = median(probit$data[, q][which(probit$data[, ".outcome"] == "war")])
+    }
+    test_data[, j] = x_j_quants  
+  }
+  if (choice == "low"){
+    for (q in 1:ncol(test_data)){
+      test_data[, q] = median(probit$data[, q][which(probit$data[, ".outcome"] == "peace")])
+    }
+    test_data[, j] = x_j_quants  
+  }
+  
+  
+  
+  print(test_data)
+  probit_mean = predict(probit, newdata = test_data, se.fit = T, type = "response")$fit
+  print(probit_mean)
+  probit_lower = predict(probit, newdata = test_data, se.fit = T, type = "response")$fit - qnorm(upper_ci)*predict(probit, newdata = test_data, se.fit = T, type = "response")$se.fit
+  print(probit_lower)
+  probit_upper = predict(probit, newdata = test_data, se.fit = T, type = "response")$fit + qnorm(upper_ci)*predict(probit, newdata = test_data, se.fit = T, type = "response")$se.fit
+  print(probit_upper)
+  # if (bart_machine$pred_type == "classification"){ ##convert to probits
+  #   bart_predictions_by_quantile = bart_predictions_by_quantile
+  # }
+  #   
+  #   
+  # bart_avg_predictions_by_quantile_by_gibbs = array(NA, c(length(x_j_quants), bart_machine$num_iterations_after_burn_in))
+  # for (q in 1 : length(x_j_quants)){
+  #   for (g in 1 : bart_machine$num_iterations_after_burn_in){
+  #     bart_avg_predictions_by_quantile_by_gibbs[q, g] = mean(bart_predictions_by_quantile[q, , g])
+  #   }		
+  # }
+  
+  # bart_avg_predictions_by_quantile = apply(bart_predictions_by_quantile, 1, mean)
+  # bart_avg_predictions_lower = apply(bart_predictions_by_quantile, 1, quantile, probs = lower_ci)
+  # bart_avg_predictions_upper = apply(bart_predictions_by_quantile, 1, quantile, probs = upper_ci)
+  
+  var_name = j
+  ylab_name = "Probabilities"
+  par(mar=c(5,5,5,5))
+  plot(x_j_quants, probit_mean,
+       type = "o",
+       # main = "Conditional Effect Plot",
+       # ylim = c(min(bart_avg_predictions_lower, bart_avg_predictions_upper), max(bart_avg_predictions_lower, bart_avg_predictions_upper)),
+       ylim = c(0, 1),
+       ylab = ylab_name,
+       xlab = "GDP growth plotted at specified quantiles", cex.lab = 2, cex.axis = 1.5)
+  # xlab = paste(var_name, "plotted at specified quantiles"))
+  # polygon(c(x_j_quants, rev(x_j_quants)), c(bart_avg_predictions_upper, rev(bart_avg_predictions_lower)), col = "grey91", border = NA)
+  lines(x_j_quants, probit_lower, type = "o", pch = 19, col = "red", lwd = 1, lty = 2)
+  lines(x_j_quants, probit_upper, type = "o", pch = 19, col = "red", lwd = 1, lty = 2)
+  lines(x_j_quants, probit_mean, type = "o", lwd = 1, pch = 19, col = "red")
+  # legend("topright", c("Partial Effect", "Conditional Effect"), lty = 1, pch = 19, col = c("blue", "red"))
+  # invisible(list(x_j_quants = x_j_quants, bart_avg_predictions_by_quantile = bart_avg_predictions_by_quantile, prop_data = prop_data))
+}
+
+
+pd_plot_prob_case_select_probit = function(probit, j, levs = c(0.05, seq(from = 0.10, to = 0.90, by = 0.10), 0.95), lower_ci = 0.025, upper_ci = 0.975, prop_data = 1, choice){
+  # check_serialization(bart_machine) #ensure the Java object exists and fire an error if not
+  # if (class(j) == "integer"){
+  #   j = as.numeric(j)
+  # }
+  # if (class(j) == "numeric" && (j < 1 || j > bart_machine$p)){
+  #   stop(paste("You must set j to a number between 1 and p =", bart_machine$p))
+  # } else if (class(j) == "character" && !(j %in% bart_machine$training_data_features)){
+  #   stop("j must be the name of one of the training features (see \"<bart_model>$training_data_features\")")
+  # } else if (!(class(j) == "numeric" || class(j) == "character")){
+  #   stop("j must be a column number or column name")
+  # }
+  x_j = probit$data[, j]
+  # x_j = bart_machine$model_matrix_training_data[, j]
+  
+  #fail with a warning if there's only one value (we don't want an error because it would fail on loops).
+  if (length(unique(na.omit(x_j))) <= 1){
+    warning("There must be more than one unique value in this training feature. PD plot not generated.")
+    return()
+  }
+  x_j_quants = unique(quantile(x_j, levs, na.rm = TRUE))
+  print(x_j_quants)
+  #fail with a warning if there's only one value (we don't want an error because it would fail on loops).
+  if (length(unique(x_j_quants)) <= 1){
+    warning("There must be more than one unique value among the quantiles selected. PD plot not generated.")
+    return()
+  }
+  
+  # n_pd_plot = round(bart_machine$n * prop_data)
+  # n_pd_plot = sum(bart_machine$y == "war")
+  # bart_predictions_by_quantile = array(NA, c(length(x_j_quants), bart_machine$num_iterations_after_burn_in))
+  
+  covariates = probit$data[, -dim(probit$data)[2]]
+  predictions = matrix(NA, nrow = length(x_j_quants), ncol = 3)
+  
+  if (choice == "high"){
+    test_data = as.data.frame(matrix(NA, nrow = sum(probit$y  == 1), ncol = dim(probit$data)[2]-1))
+    test_data_name = names(probit$data[, -dim(probit$data)[2]])
+    names(test_data) = test_data_name
+    
+    for (q in 1:length(x_j_quants)){
+      indices = which(probit$y == 1)
+      test_data = covariates[indices,]
+      test_data[, j] = x_j_quants[q]
+      print(test_data)
+      probit_pred = predict(probit, newdata = test_data, se.fit = T, type = "response")$fit
+      predictions[q,1] = mean(probit_pred)
+      predictions[q,2] = quantile(probit_pred, probs = 0.975)
+      predictions[q,3] = quantile(probit_pred, probs = 0.025)
+    } 
+  }
+  if (choice == "low"){
+    test_data = as.data.frame(matrix(NA, nrow = sum(probit$y  == 0), ncol = dim(probit$data)[2]-1))
+    test_data_name = names(probit$data[, -dim(probit$data)[2]])
+    names(test_data) = test_data_name
+    
+    for (q in 1:length(x_j_quants)){
+      indices = which(probit$y == 0)
+      test_data = covariates[indices,]
+      test_data[, j] = x_j_quants[q]
+      print(test_data)
+      probit_pred = predict(probit, newdata = test_data, se.fit = T, type = "response")$fit
+      predictions[q,1] = mean(probit_pred)
+      predictions[q,2] = quantile(probit_pred, probs = 0.975)
+      predictions[q,3] = quantile(probit_pred, probs = 0.025)
+    }
+  }
+  
+  print(test_data)
+  probit_mean = predictions[,1]
+  print(probit_mean)
+  probit_lower = predictions[,2]
+  print(probit_lower)
+  probit_upper = predictions[,3]
+  print(probit_upper)
+  # if (bart_machine$pred_type == "classification"){ ##convert to probits
+  #   bart_predictions_by_quantile = bart_predictions_by_quantile
+  # }
+  #   
+  #   
+  # bart_avg_predictions_by_quantile_by_gibbs = array(NA, c(length(x_j_quants), bart_machine$num_iterations_after_burn_in))
+  # for (q in 1 : length(x_j_quants)){
+  #   for (g in 1 : bart_machine$num_iterations_after_burn_in){
+  #     bart_avg_predictions_by_quantile_by_gibbs[q, g] = mean(bart_predictions_by_quantile[q, , g])
+  #   }		
+  # }
+  
+  # bart_avg_predictions_by_quantile = apply(bart_predictions_by_quantile, 1, mean)
+  # bart_avg_predictions_lower = apply(bart_predictions_by_quantile, 1, quantile, probs = lower_ci)
+  # bart_avg_predictions_upper = apply(bart_predictions_by_quantile, 1, quantile, probs = upper_ci)
+  
+  var_name = j
+  ylab_name = "Probabilities"
+  # par(mar=c(5,5,5,5))
+  # plot(x_j_quants, probit_mean,
+  #      type = "o",
+  #      # main = "Conditional Effect Plot",
+  #      # ylim = c(min(bart_avg_predictions_lower, bart_avg_predictions_upper), max(bart_avg_predictions_lower, bart_avg_predictions_upper)),
+  #      ylim = c(0, 1),
+  #      ylab = ylab_name,
+  #      xlab = "GDP growth plotted at specified quantiles", cex.lab = 2, cex.axis = 1.5)
+  # xlab = paste(var_name, "plotted at specified quantiles"))
+  # polygon(c(x_j_quants, rev(x_j_quants)), c(bart_avg_predictions_upper, rev(bart_avg_predictions_lower)), col = "grey91", border = NA)
+  lines(x_j_quants, probit_lower, type = "o", pch = 19, col = "blue", lwd = 1, lty = 2)
+  lines(x_j_quants, probit_upper, type = "o", pch = 19, col = "blue", lwd = 1, lty = 2)
+  lines(x_j_quants, probit_mean, type = "o", lwd = 1, pch = 19, col = "blue")
+  # legend("topright", c("Partial Effect", "Conditional Effect"), lty = 1, pch = 19, col = c("blue", "red"))
+  # invisible(list(x_j_quants = x_j_quants, bart_avg_predictions_by_quantile = bart_avg_predictions_by_quantile, prop_data = prop_data))
+}
+
+pdf(paste0(script.path, "partial_vs_conditional_probit_high.pdf"), height = 8, width = 12)
+cond_plot_prob_case_select_probit(probit.md, levs = c(.01, seq(0.05, 0.95, 0.05), .99), "gdpgrowth", choice = "high")
+pd_plot_prob_case_select_probit(probit.md, levs = c(.01, seq(0.05, 0.95, 0.05), .99), "gdpgrowth", choice = "high")
+dev.off()
+
+pdf(paste0(script.path, "partial_vs_conditional_probit_low.pdf"), height = 8, width = 12)
+cond_plot_prob_case_select_probit(probit.md, levs = c(.01, seq(0.05, 0.95, 0.05), .99), "gdpgrowth", choice = "low")
+pd_plot_prob_case_select_probit(probit.md, levs = c(.01, seq(0.05, 0.95, 0.05), .99), "gdpgrowth", choice = "low")
+dev.off()
+
+
+
 # 
 # quant_prob <- c(.01, seq(0.05, 0.95, 0.05), .99)
 # 
@@ -276,7 +804,7 @@ dev.off()
 #   data.full$warstds,
 #   levels=c(0,1),
 #   labels=c("peace", "war"))
-# 
+
 # model.logit<- train(as.factor(warstds)~sxpnew+sxpsq+ln_gdpen+gdpgrowth+warhist+lmtnest+ef+popdense
 #                     +lpopns+coldwar+seceduc+ptime+trade,
 #                     metric="ROC", method="glm", family="binomial", #uncorrected logistic model
@@ -309,8 +837,10 @@ dev.off()
 # 
 # test <- lapply(c("high", "low"), create_test_data_logit)
 # 
+# test[[1]]
 # 
 # summary(model.logit$finalModel)
+# summary(probit.md)
 # 
 # logit.pred <- predict(model.logit$finalModel, newdata = test[[1]], type = "response", se.fit = T)
 # ci_logit_upper <- logit.pred$fit + 1.96*logit.pred$se.fit
@@ -341,4 +871,5 @@ dev.off()
 # which bill becomes law
 # regime change 
 # http://www.cs.nyu.edu/~mohri/pub/
+
 
